@@ -69,6 +69,7 @@ class ActionModule(RebootActionModule):
         'luks_ssh_add_timeout',
         'luks_stop_retry_on_output',
         'luks_manual_unlock_on_fail',
+        'luks_ssh_forcecommand_unlock',
     ))
 
     # These delays actually speed up the process, as w/o them the script will:
@@ -97,6 +98,7 @@ class ActionModule(RebootActionModule):
     ]
     DEFAULT_LUKS_SSH_RECONNECT_TIMEOUT = 3600
     DEFAULT_LUKS_MANUAL_UNLOCK_ON_FAIL = True
+    DEFAULT_LUKS_SSH_FORCECOMMAND_UNLOCK = False
 
     _has_added_key_to_ssh_agent = False
 
@@ -151,6 +153,12 @@ class ActionModule(RebootActionModule):
     @property
     def luks_ssh_executable(self):
         return self._get_task_arg("luks_ssh_executable") or self._try_get_connection_option("ansible_ssh_executable") or self.DEFAULT_LUKS_SSH_EXECUTABLE
+
+    @property
+    def luks_ssh_unlock_cmd(self):
+        if not self.luks_ssh_forcecommand_unlock:
+            return 'echo -n "' + str(self.luks_password) + '" | cryptroot-unlock'
+        return str(self.luks_password)
 
     @property
     def luks_ssh_keygen_executable(self):
@@ -209,6 +217,14 @@ class ActionModule(RebootActionModule):
             return self.DEFAULT_LUKS_MANUAL_UNLOCK_ON_FAIL
         return boolean(value)
 
+    @property
+    def luks_ssh_forcecommand_unlock(self):
+        # Cannot use "or" here to see if it's unset, as the data type is bool
+        value = self._task.args.get('luks_ssh_forcecommand_unlock')
+        if value is None:
+            return self.DEFAULT_LUKS_SSH_FORCECOMMAND_UNLOCK
+        return boolean(value)
+
     def get_luks_ssh_args(self):
         args = [
             self.luks_ssh_executable,
@@ -252,7 +268,7 @@ class ActionModule(RebootActionModule):
                 stdout=subprocess.PIPE,  # capture STDOUT
                 stderr=subprocess.STDOUT,  # redirect STDERR to STDOUT
                 text=True,  # string input & output instead of bytes
-                input=str(self.luks_password),
+                input=self.luks_ssh_unlock_cmd,
                 check=True)  # raise error on non-0 exit code
             display.display("{action}: LUKS SSH unlock successful, output:\n\t{output}".format(
                 action=self._task.action, output=result.stdout.replace("\n", "\n\t")))
