@@ -16,9 +16,15 @@ This project tries to follow [SemVer 2.0.0](https://semver.org/).
 	https://changelog.md/
 -->
 
-## v0.3.1 (WIP)
+## v0.4.0 (WIP)
 
 - Fixed TypeError on datetime variables that were preventing the `reboot_luks_ssh` action plugin to succeeds in rebooting. (#20)
+
+- Added settings to handle case where dropbear is not forcing the `cryptroot-unlock` command(#20)
+
+- Added args: (#20)
+
+  - `luks_ssh_forcecommand_unlock`
 
 ## v0.3.0 (2023-01-18)
 
