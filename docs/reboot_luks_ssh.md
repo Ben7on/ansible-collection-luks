@@ -148,6 +148,7 @@ In addition, `reboot_luks_ssh` also defines some additional parameters:
 | `luks_stop_retry_on_output`  | list\[string] | `["bad password", "maximum number of tries exceeded", "error", "timeout"]` | If the cryptroot-unlock's output contains any of these substrings (case insensitive) then stop retrying to unlock and fail early.
 | `luks_ssh_reconnect_timeout` | int    | `3600` | Timeout for reconnecting after failing to unlock, waiting for manual unlock by human.
 | `luks_manual_unlock_on_fail` | bool   | `true` | If true, the action plugin will prompt the human to manually unlock LUKS if the action plugin fails, instead of failing the task.
+| `luks_ssh_forcecommand_unlock` | bool   | `false` | If true, the action plugin will consider that `cryptroot-unlock` command is forced (using dropbear option or authorized key files argument).
 
 <!--lint enable maximum-line-length-->
 
